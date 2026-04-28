@@ -1,0 +1,113 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Корзина - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Корзина</h1>
+    
+    {% if cart.items.all %}
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="cart-items">
+                    {% for item in cart.items.all %}
+                        <div class="cart-item d-flex align-items-center gap-3 p-3 border-bottom">
+                            <div class="cart-item-image" style="width: 100px;">
+                                {% if item.product.image_main %}
+                                    <img src="{{ item.product.image_main.url }}" alt="{{ item.product.name }}" class="img-fluid rounded">
+                                {% else %}
+                                    <div class="bg-secondary d-flex align-items-center justify-content-center text-white rounded" style="height: 80px;">Нет фото</div>
+                                {% endif %}
+                            </div>
+                            <div class="cart-item-details flex-grow-1">
+                                <h5>{{ item.product.name }}</h5>
+                                <div class="text-muted">{{ item.product.brand.name }}</div>
+                                <div>Размер: {{ item.size.size }}</div>
+                            </div>
+                            <div class="cart-item-price" style="min-width: 100px;">
+                                {{ item.product.price }} ₽
+                            </div>
+                            <div class="cart-item-quantity" style="min-width: 150px;">
+                                <form method="POST" action="{% url 'cart' %}" class="d-flex gap-2 align-items-end">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <div class="quantity-control d-flex align-items-center gap-2">
+                                        <button type="button" class="qty-btn minus btn btn-sm btn-outline-secondary" onclick="updateQuantity(this, -1)">-</button>
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="10" class="qty-input form-control form-control-sm" style="width: 60px;">
+                                        <button type="button" class="qty-btn plus btn btn-sm btn-outline-secondary" onclick="updateQuantity(this, 1)">+</button>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Обновить</button>
+                                </form>
+                            </div>
+                            <div class="cart-item-total" style="min-width: 100px; font-weight: bold;">
+                                {{ item.get_total }} ₽
+                            </div>
+                            <a href="{% url 'remove_from_cart' item.id %}" class="cart-item-remove text-danger">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="cart-summary card">
+                    <div class="card-body">
+                        <h5 class="card-title">Итого</h5>
+                        <div class="summary-row d-flex justify-content-between mb-2">
+                            <span>Товары ({{ cart.get_total_items }})</span>
+                            <span>{{ cart.get_total }} ₽</span>
+                        </div>
+                        <div class="summary-row d-flex justify-content-between mb-2">
+                            <span>Доставка</span>
+                            <span>Бесплатно</span>
+                        </div>
+                        <hr>
+                        <div class="summary-total d-flex justify-content-between">
+                            <strong>К оплате</strong>
+                            <strong class="fs-5">{{ cart.get_total }} ₽</strong>
+                        </div>
+                        <a href="{% url 'checkout' %}" class="btn btn-gold w-100 mt-3">Оформить заказ</a>
+                        <a href="{% url 'catalog' %}" class="btn btn-outline-secondary w-100 mt-2">Продолжить покупки</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-cart text-center py-5">
+            <i class="bi bi-bag-x fs-1"></i>
+            <h3>Корзина пуста</h3>
+            <p>Добавьте товары в корзину, чтобы оформить заказ</p>
+            <a href="{% url 'catalog' %}" class="btn btn-gold">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function updateQuantity(btn, delta) {
+    const input = btn.parentElement.querySelector('.qty-input');
+    let value = parseInt(input.value) + delta;
+    value = Math.max(1, Math.min(value, 10));
+    input.value = value;
+}
+
+document.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (!this.classList.contains('minus') && !this.classList.contains('plus')) return;
+        const input = this.parentElement.querySelector('.qty-input');
+        let value = parseInt(input.value);
+        if (this.classList.contains('plus')) {
+            value = Math.min(value + 1, 10);
+        } else if (this.classList.contains('minus')) {
+            value = Math.max(value - 1, 1);
+        }
+        input.value = value;
+    });
+});
+</script>
+
+<style>
+    .btn-gold { background: #C5A572; color: white; border: none; }
+    .btn-gold:hover { background: #8B7355; color: white; }
+</style>
+{% endblock %}

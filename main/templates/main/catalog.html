@@ -1,0 +1,44 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Каталог - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="filters-sidebar">
+                <h5 class="mb-3">Фильтры</h5>
+                <form method="GET" id="filterForm">
+                    <div class="filter-group mb-3"><label class="filter-label fw-bold">Категория</label><select name="category" class="form-select" onchange="this.form.submit()"><option value="">Все</option>{% for cat in categories %}<option value="{{ cat.slug }}" {% if current_filters.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}</select></div>
+                    <div class="filter-group mb-3"><label class="filter-label fw-bold">Пол</label><select name="gender" class="form-select" onchange="this.form.submit()"><option value="">Все</option><option value="men" {% if current_filters.gender == 'men' %}selected{% endif %}>Мужской</option><option value="women" {% if current_filters.gender == 'women' %}selected{% endif %}>Женский</option><option value="unisex" {% if current_filters.gender == 'unisex' %}selected{% endif %}>Унисекс</option></select></div>
+                    <div class="filter-group mb-3"><label class="filter-label fw-bold">Бренд</label><select name="brand" class="form-select" onchange="this.form.submit()"><option value="">Все</option>{% for brand in brands %}<option value="{{ brand.id }}" {% if current_filters.brand == brand.id|stringformat:"s" %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}</select></div>
+                    <div class="filter-group mb-3"><label class="filter-label fw-bold">Размер</label><div class="d-flex flex-wrap gap-2">{% for size in sizes %}<label class="size-check"><input type="checkbox" name="size" value="{{ size.size }}" {% if size.size|stringformat:"s" in current_filters.size %}checked{% endif %} onchange="this.form.submit()"><span class="d-inline-block px-3 py-1 border rounded">{{ size.size }}</span></label>{% endfor %}</div></div>
+                    <div class="filter-group mb-3"><label class="filter-label fw-bold">Цена</label><div class="row g-2"><div class="col-6"><input type="number" name="min_price" class="form-control" placeholder="от" value="{{ current_filters.min_price }}"></div><div class="col-6"><input type="number" name="max_price" class="form-control" placeholder="до" value="{{ current_filters.max_price }}"></div></div></div>
+                    <button type="submit" class="btn btn-gold w-100 mt-3">Применить</button>
+                    <a href="{% url 'catalog' %}" class="btn btn-outline-secondary w-100 mt-2">Сбросить</a>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4"><h2>Каталог товаров</h2><select class="form-select w-auto" onchange="window.location.href=this.value"><option value="?sort=newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>Новинки</option><option value="?sort=price_asc" {% if current_filters.sort == 'price_asc' %}selected{% endif %}>Цена: по возрастанию</option><option value="?sort=price_desc" {% if current_filters.sort == 'price_desc' %}selected{% endif %}>Цена: по убыванию</option><option value="?sort=popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>Популярные</option></select></div>
+            <div class="row g-4">
+                {% for product in products %}
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-img-top" style="height: 200px; overflow: hidden;">{% if product.image_main %}<img src="{{ product.image_main.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ product.name }}">{% else %}<div class="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center text-white">Нет фото</div>{% endif %}</div>
+                            <div class="card-body"><h5 class="card-title">{{ product.name }}</h5><p class="card-text">{{ product.brand.name }}<br><strong>{{ product.price }} ₽</strong></p><a href="{{ product.get_absolute_url }}" class="btn btn-gold w-100">Подробнее</a></div>
+                        </div>
+                    </div>
+                {% empty %}<div class="col-12 text-center py-5"><i class="bi bi-emoji-frown fs-1"></i><h4>Товары не найдены</h4><p>Попробуйте изменить параметры фильтрации</p></div>{% endfor %}
+            </div>
+            {% if products.has_other_pages %}<nav class="mt-5"><ul class="pagination justify-content-center">{% if products.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}&{{ current_filters.urlencode }}">←</a></li>{% endif %}{% for num in products.paginator.page_range %}<li class="page-item {% if products.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}&{{ current_filters.urlencode }}">{{ num }}</a></li>{% endfor %}{% if products.has_next %}<li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}&{{ current_filters.urlencode }}">→</a></li>{% endif %}</ul></nav>{% endif %}
+        </div>
+    </div>
+</div>
+<style>
+    .btn-gold { background: #C5A572; color: white; border: none; }
+    .btn-gold:hover { background: #8B7355; color: white; }
+    .size-check input { display: none; }
+    .size-check input:checked + span { background: #C5A572; color: white; border-color: #C5A572; }
+</style>
+{% endblock %}

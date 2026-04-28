@@ -1,0 +1,21 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Заказ оформлен - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center">
+        <i class="bi bi-check-circle-fill" style="font-size: 5rem; color: #28a745;"></i>
+        <h1 class="mt-3">Спасибо за заказ!</h1>
+        <p class="lead">Ваш заказ #{{ order.order_number }} успешно оформлен</p>
+        <p>На указанный email отправлено подтверждение заказа.</p>
+        <a href="{% url 'index' %}" class="btn btn-gold mt-3">На главную</a>
+        <a href="{% url 'catalog' %}" class="btn btn-outline-secondary mt-3">Продолжить покупки</a>
+    </div>
+</div>
+
+<style>
+    .btn-gold { background: #C5A572; color: white; border: none; }
+    .btn-gold:hover { background: #8B7355; color: white; }
+</style>
+{% endblock %}

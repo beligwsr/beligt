@@ -1,0 +1,42 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Регистрация - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4>Регистрация</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-gold w-100">Зарегистрироваться</button>
+                    </form>
+                    <hr>
+                    <div class="text-center">
+                        <a href="{% url 'login' %}">Уже есть аккаунт? Войти</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold { background: #C5A572; color: white; border: none; }
+    .btn-gold:hover { background: #8B7355; color: white; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+</style>
+{% endblock %}

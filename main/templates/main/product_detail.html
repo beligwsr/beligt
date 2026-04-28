@@ -1,0 +1,186 @@
+{% extends 'main/base.html' %}
+
+{% block title %}{{ product.name }} - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'catalog' %}">Каталог</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-gallery">
+                <div class="main-image mb-3">
+                    {% if product.image_main %}
+                        <img src="{{ product.image_main.url }}" alt="{{ product.name }}" class="img-fluid rounded" id="mainProductImage" style="width: 100%;">
+                    {% else %}
+                        <div class="bg-secondary d-flex align-items-center justify-content-center text-white rounded" style="height: 400px;">Нет фото</div>
+                    {% endif %}
+                </div>
+                {% if product.image_hover or product.image_2 or product.image_3 %}
+                <div class="thumbnail-images d-flex gap-2">
+                    {% if product.image_main %}
+                    <div class="thumbnail" onclick="document.getElementById('mainProductImage').src='{{ product.image_main.url }}'">
+                        <img src="{{ product.image_main.url }}" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
+                    </div>
+                    {% endif %}
+                    {% if product.image_hover %}
+                    <div class="thumbnail" onclick="document.getElementById('mainProductImage').src='{{ product.image_hover.url }}'">
+                        <img src="{{ product.image_hover.url }}" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
+                    </div>
+                    {% endif %}
+                    {% if product.image_2 %}
+                    <div class="thumbnail" onclick="document.getElementById('mainProductImage').src='{{ product.image_2.url }}'">
+                        <img src="{{ product.image_2.url }}" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="product-info">
+                <div class="product-brand text-uppercase text-muted mb-2">{{ product.brand.name }}</div>
+                <h1 class="product-title mb-3">{{ product.name }}</h1>
+                
+                <div class="product-price mb-3">
+                    {% if product.old_price %}
+                        <span class="old-price text-muted text-decoration-line-through me-2">{{ product.old_price }} ₽</span>
+                        <span class="current-price fs-3 fw-bold text-danger">{{ product.price }} ₽</span>
+                        <span class="discount-badge bg-danger text-white px-2 py-1 rounded ms-2">-{{ product.get_discount_percent }}%</span>
+                    {% else %}
+                        <span class="current-price fs-3 fw-bold">{{ product.price }} ₽</span>
+                    {% endif %}
+                </div>
+                
+                <div class="product-short-desc mb-4">
+                    <p>{{ product.description|truncatewords:30 }}</p>
+                </div>
+                
+                <form method="POST" action="{% url 'add_to_cart' product.id %}" id="addToCartForm">
+                    {% csrf_token %}
+                    
+                    <div class="size-selector mb-4">
+                        <label class="form-label fw-bold">Выберите размер:</label>
+                        <div class="size-options d-flex flex-wrap gap-2">
+                            {% for stock in sizes %}
+                                <label class="size-option">
+                                    <input type="radio" name="size" value="{{ stock.size.id }}" required style="display: none;">
+                                    <span class="d-inline-block px-3 py-2 border rounded" style="cursor: pointer;">{{ stock.size.size }}</span>
+                                </label>
+                            {% empty %}
+                                <p class="text-danger">Нет в наличии</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="quantity-selector mb-4">
+                        <label class="form-label fw-bold">Количество:</label>
+                        <div class="quantity-control d-flex align-items-center gap-2">
+                            <button type="button" class="qty-btn minus btn btn-outline-secondary">-</button>
+                            <input type="number" name="quantity" value="1" min="1" max="10" class="qty-input form-control" style="width: 80px; text-align: center;">
+                            <button type="button" class="qty-btn plus btn btn-outline-secondary">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="product-actions d-flex gap-2">
+                        <button type="submit" class="btn btn-gold flex-grow-1" {% if not sizes %}disabled{% endif %}>
+                            <i class="bi bi-bag"></i> Добавить в корзину
+                        </button>
+                        <a href="{% url 'add_to_wishlist' product.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-heart"></i>
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="product-meta mt-4 pt-3 border-top">
+                    <div><i class="bi bi-tag"></i> Категория: {{ product.category.name }}</div>
+                    <div><i class="bi bi-gender-ambiguous"></i> Пол: {{ product.get_gender_display }}</div>
+                    <div><i class="bi bi-palette"></i> Цвет: {{ product.color }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTabs">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">Описание</button>
+                </li>
+            </ul>
+            <div class="tab-content mt-4">
+                <div class="tab-pane fade show active" id="description">
+                    <div class="product-description">{{ product.description|linebreaks }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if related %}
+    <div class="similar-products mt-5">
+        <h3 class="mb-4">Похожие товары</h3>
+        <div class="row g-4">
+            {% for product in related %}
+                <div class="col-md-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-img-top" style="height: 200px; overflow: hidden;">
+                            {% if product.image_main %}
+                                <img src="{{ product.image_main.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ product.name }}">
+                            {% else %}
+                                <div class="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center text-white">Нет фото</div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.brand.name }}<br><strong>{{ product.price }} ₽</strong></p>
+                            <a href="{{ product.get_absolute_url }}" class="btn btn-gold w-100">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.qty-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('.qty-input');
+            let value = parseInt(input.value);
+            if (this.classList.contains('plus')) {
+                value = Math.min(value + 1, 10);
+            } else if (this.classList.contains('minus')) {
+                value = Math.max(value - 1, 1);
+            }
+            input.value = value;
+        });
+    });
+
+    document.querySelectorAll('.size-option input').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.size-option span').forEach(span => {
+                span.style.background = 'white';
+                span.style.borderColor = '#ddd';
+            });
+            if (this.checked) {
+                this.nextElementSibling.style.background = '#C5A572';
+                this.nextElementSibling.style.color = 'white';
+                this.nextElementSibling.style.borderColor = '#C5A572';
+            }
+        });
+    });
+</script>
+
+<style>
+    .btn-gold { background: #C5A572; color: white; border: none; }
+    .btn-gold:hover { background: #8B7355; color: white; }
+</style>
+{% endblock %}

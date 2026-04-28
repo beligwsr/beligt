@@ -1,0 +1,57 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Личный кабинет - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Личный кабинет</h1>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                    <h5 class="mt-2">{{ user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <hr>
+                    <p><strong>Бонусных баллов:</strong> {{ user.bonus_points }}</p>
+                    <p><strong>Телефон:</strong> {{ user.phone|default:"Не указан" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Мои заказы</h5>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                        {% for order in orders %}
+                            <div class="border-bottom mb-3 pb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Заказ #{{ order.order_number }}</strong>
+                                    <span>{{ order.created_at|date:"d.m.Y" }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <span>Сумма: {{ order.total }} ₽</span>
+                                    <span class="badge {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">У вас пока нет заказов</p>
+                        <a href="{% url 'catalog' %}" class="btn btn-gold">Перейти в каталог</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold { background: #C5A572; color: white; border: none; }
+    .btn-gold:hover { background: #8B7355; color: white; }
+</style>
+{% endblock %}
