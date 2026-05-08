@@ -5,7 +5,7 @@ services:
     build: .
     container_name: django_app
     volumes:
-      - ./belig:/app
+      - ./.:/app
     expose:
       - "8000"
 
